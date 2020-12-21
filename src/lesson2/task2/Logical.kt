@@ -3,6 +3,7 @@
 package lesson2.task2
 
 import lesson1.task1.sqr
+import kotlin.math.abs
 
 /**
  * Пример
@@ -18,7 +19,17 @@ fun pointInsideCircle(x: Double, y: Double, x0: Double, y0: Double, r: Double) =
  * Четырехзначное число назовем счастливым, если сумма первых двух ее цифр равна сумме двух последних.
  * Определить, счастливое ли заданное число, вернуть true, если это так.
  */
-fun isNumberHappy(number: Int): Boolean = TODO()
+fun isNumberHappy(number: Int): Boolean {
+    val first = number / 1000
+    val second = number / 100 % 10
+    val third = number / 10 % 10
+    val forth = number % 10
+
+    return when {
+        first + second == third + forth -> true
+        else -> false
+    }
+}
 
 /**
  * Простая
@@ -27,7 +38,14 @@ fun isNumberHappy(number: Int): Boolean = TODO()
  * Определить, угрожают ли они друг другу. Вернуть true, если угрожают.
  * Считать, что ферзи не могут загораживать друг друга.
  */
-fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean = TODO()
+fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean {
+    val onTheSameLine = x1 == x2 || y1 == y2
+    val onTheSameDiagonal = abs(x1 - x2) == abs(y1 - y2)
+    return when {
+        onTheSameLine || onTheSameDiagonal -> true
+        else -> false
+    }
+}
 
 
 /**
@@ -36,7 +54,20 @@ fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean = TODO()
  * Дан номер месяца (от 1 до 12 включительно) и год (положительный).
  * Вернуть число дней в этом месяце этого года по григорианскому календарю.
  */
-fun daysInMonth(month: Int, year: Int): Int = TODO()
+fun daysInMonth(month: Int, year: Int): Int {
+    val leapYear = year % 4 == 0 && (year % 100 != 0 || year % 1000 == 0)
+    println("$year $month $leapYear ${leapYear && month == 2}")
+
+    return when {
+        leapYear && month == 2 -> 29
+        !leapYear && month == 2 -> 28
+        month == 4 -> 30
+        month == 6 -> 30
+        month == 9 -> 30
+        month == 11 -> 30
+        else -> 31
+    }
+}
 
 /**
  * Средняя
@@ -48,7 +79,13 @@ fun daysInMonth(month: Int, year: Int): Int = TODO()
 fun circleInside(
     x1: Double, y1: Double, r1: Double,
     x2: Double, y2: Double, r2: Double
-): Boolean = TODO()
+): Boolean {
+    val distanceBetweenPoints = kotlin.math.sqrt(sqr(abs(x1 - x2)) + sqr(abs(y1 - y2)))
+    return when {
+        distanceBetweenPoints + r1 <= r2 -> true
+        else -> false
+    }
+}
 
 /**
  * Средняя
@@ -59,4 +96,17 @@ fun circleInside(
  * кирпич 4 х 4 х 4 пройдёт через отверстие 4 х 4.
  * Вернуть true, если кирпич пройдёт
  */
-fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean = TODO()
+fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean    {
+    return when {
+        r >= a && s >= b -> true
+        r >= a && s >= c -> true
+
+        r >= b && s >= a -> true
+        r >= b && s >= c -> true
+
+        r >= c && s >= a -> true
+        r >= c && s >= b -> true
+
+        else -> false
+    }
+}

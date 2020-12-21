@@ -3,6 +3,8 @@
 package lesson2.task1
 
 import lesson1.task1.discriminant
+import lesson1.task1.sqr
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sqrt
 
@@ -63,7 +65,15 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
  * Мой возраст. Для заданного 0 < n < 200, рассматриваемого как возраст человека,
  * вернуть строку вида: «21 год», «32 года», «12 лет».
  */
-fun ageDescription(age: Int): String = TODO()
+fun ageDescription(age: Int): String {
+    return when {
+        age % 5 == 0 -> "$age лет"
+        age - (age / 100) * 100 in 11..19 -> "$age лет"
+        age - (age / 10) * 10 in 6..9 -> "$age лет"
+        age - (age / 10) * 10 in 2..4 -> "$age года"
+        else -> "$age год"
+    }
+}
 
 /**
  * Простая
@@ -76,7 +86,15 @@ fun timeForHalfWay(
     t1: Double, v1: Double,
     t2: Double, v2: Double,
     t3: Double, v3: Double
-): Double = TODO()
+): Double {
+    val halfWay = (t1 * v1 + t2 * v2 + t3 * v3) / 2
+
+    return when {
+        halfWay < t1 * v1 -> halfWay / v1
+        halfWay < (t1 * v1 + t2 * v2) -> (halfWay - t1 * v1) / v2 + t1
+        else -> (halfWay - (t1 * v1 + t2 * v2)) / v3 + t1 + t2
+    }
+}
 
 /**
  * Простая
@@ -91,7 +109,16 @@ fun whichRookThreatens(
     kingX: Int, kingY: Int,
     rookX1: Int, rookY1: Int,
     rookX2: Int, rookY2: Int
-): Int = TODO()
+): Int {
+    val onTheSameLineWithRook1 = kingX == rookX1 || kingY == rookY1
+    val onTheSameLineWithRook2 = kingX == rookX2 || kingY == rookY2
+    return when {
+        onTheSameLineWithRook1 && onTheSameLineWithRook2 -> 3
+        onTheSameLineWithRook2 -> 2
+        onTheSameLineWithRook1 -> 1
+        else -> 0
+    }
+}
 
 /**
  * Простая
@@ -107,8 +134,16 @@ fun rookOrBishopThreatens(
     kingX: Int, kingY: Int,
     rookX: Int, rookY: Int,
     bishopX: Int, bishopY: Int
-): Int = TODO()
-
+): Int {
+    val onTheSameLineWithRook = kingX == rookX || kingY == rookY
+    val onTheSameDiagonalWithBishop = abs(kingX - bishopX) == abs(kingY - bishopY)
+    return when {
+        onTheSameLineWithRook && onTheSameDiagonalWithBishop -> 3
+        onTheSameDiagonalWithBishop -> 2
+        onTheSameLineWithRook -> 1
+        else -> 0
+    }
+}
 /**
  * Простая
  *
@@ -117,7 +152,19 @@ fun rookOrBishopThreatens(
  * прямоугольным (вернуть 1) или тупоугольным (вернуть 2).
  * Если такой треугольник не существует, вернуть -1.
  */
-fun triangleKind(a: Double, b: Double, c: Double): Int = TODO()
+fun triangleKind(a: Double, b: Double, c: Double): Int {
+    if ((a + b) < c || (a + c) < b || (b + c) < a) return -1
+
+    val alfa = kotlin.math.acos((sqr(b) + sqr(c) - sqr(a)) / (2 * b * c)) * 180 / kotlin.math.PI
+    val beta = kotlin.math.acos((sqr(a) + sqr(c) - sqr(b)) / (2 * a * c)) * 180 / kotlin.math.PI
+    val gama = 180 - (alfa + beta)
+
+    return when {
+        alfa < 90.0 && beta < 90.0 && gama < 90.0 -> 0
+        alfa > 90.0 || beta > 90.0 || gama > 90.0 -> 2
+        else -> 1
+    }
+}
 
 /**
  * Средняя
@@ -127,4 +174,12 @@ fun triangleKind(a: Double, b: Double, c: Double): Int = TODO()
  * Найти длину пересечения отрезков AB и CD.
  * Если пересечения нет, вернуть -1.
  */
-fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int = TODO()
+fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
+    return when {
+        d in a..b && c in a..b -> d - c
+        a in c..d && b in c..d -> b - a
+        d in a..b -> d - a
+        c in a..b -> b - c
+        else -> -1
+    }
+}
