@@ -385,6 +385,7 @@ fun times(value: String, times: Int): String {
 
 fun russian(n: Int): String {
     val result = when {
+        n > 999 && n / 1000 % 100 in 10..20 -> listOf(russian(n / 1000), getThousands(n), russian(n % 1000))
         n >= 1000 && n / 1000 % 10 == 2 -> listOf(russian((n - 2000) / 1000), "две тысячи", russian(n % 1000))
         n >= 1000 && n / 1000 % 10 == 1 -> listOf(russian((n - 1000) / 1000), "одна тысяча", russian(n % 1000))
         n > 999 -> listOf(russian(n / 1000), getThousands(n), russian(n % 1000))
