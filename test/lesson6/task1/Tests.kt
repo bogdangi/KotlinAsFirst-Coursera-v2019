@@ -34,6 +34,7 @@ class Tests {
     @Test
     @Tag("Normal")
     fun dateStrToDigit() {
+        assertEquals("01.03.1", dateStrToDigit("01 марта 1"))
         assertEquals("15.07.2016", dateStrToDigit("15 июля 2016"))
         assertEquals("", dateStrToDigit("3 мартобря 1918"))
         assertEquals("18.11.2018", dateStrToDigit("18 ноября 2018"))
@@ -53,6 +54,8 @@ class Tests {
         assertEquals("", dateDigitToStr("ab.cd.ef"))
         assertEquals("", dateDigitToStr("32.09.2011"))
         assertEquals("", dateDigitToStr("29.02.1993"))
+        assertEquals("29 февраля 7296116", dateDigitToStr("29.02.7296116"))
+        assertEquals("29 февраля 8382500", dateDigitToStr("29.02.8382500"))
     }
 
     @Test
@@ -126,6 +129,7 @@ class Tests {
         assertEquals(694, fromRoman("DCXCIV"))
         assertEquals(49, fromRoman("XLIX"))
         assertEquals(-1, fromRoman("Z"))
+        assertEquals(2595, fromRoman("MMDXCV"))
     }
 
     @Test
@@ -149,5 +153,13 @@ class Tests {
         assertThrows(IllegalArgumentException::class.java) { computeDeviceCells(10, "===", 3) }
         assertThrows(IllegalArgumentException::class.java) { computeDeviceCells(10, "+>+>[+>", 3) }
         assertThrows(IllegalStateException::class.java) { computeDeviceCells(20, ">>>>>>>>>>>>>", 12) }
+        assertEquals(
+            listOf(0, 0, -142, 0),
+            computeDeviceCells(
+                4,
+                "[++++++++++++++++++++++++++++++++]++++++++++++++-+++- -<+<>+[-->-[-++><-[---- +-+]>-<<<<<--- -+]]",
+                501
+            )
+        )
     }
 }
