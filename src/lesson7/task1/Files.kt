@@ -3,6 +3,13 @@
 package lesson7.task1
 
 import java.io.File
+import java.lang.Integer.max
+
+fun times(str: String, t: Int): String {
+    var result = ""
+    repeat(t) { result += str }
+    return result
+}
 
 /**
  * Пример
@@ -53,8 +60,27 @@ fun alignFile(inputName: String, lineLength: Int, outputName: String) {
  * Регистр букв игнорировать, то есть буквы е и Е считать одинаковыми.
  *
  */
-fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> = TODO()
+fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> {
+    val result = mutableMapOf<String, Int>()
 
+    for (line in File(inputName).readLines()) {
+        for (substring in substrings.toSet().map { it.toLowerCase() }) {
+            if (line.toLowerCase().contains(substring)) {
+                var newLine = line.toLowerCase()
+
+                do {
+                    if (newLine.startsWith(substring)) {
+                        result[substring] = (result[substring] ?: 0) + 1
+                    }
+
+                    newLine = newLine.slice(1 until newLine.length)
+                } while (newLine.contains(substring))
+            }
+        }
+    }
+
+    return substrings.map { it to (result[it.toLowerCase()] ?: 0) }.toMap()
+}
 
 /**
  * Средняя
@@ -70,7 +96,27 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
  *
  */
 fun sibilants(inputName: String, outputName: String) {
-    TODO()
+    val outputStream = File(outputName).bufferedWriter()
+    val replaceTo = mapOf(
+        "Ы" to "И",
+        "Ы".toLowerCase() to "И".toLowerCase(),
+        "Я" to "А",
+        "Я".toLowerCase() to "А".toLowerCase(),
+        "Ю" to "У",
+        "Ю".toLowerCase() to "У".toLowerCase()
+    )
+
+    for (line in File(inputName).readLines()) {
+        var updatedLine = line
+        for (i in setOf("Ж", "Ч", "Ш", "Щ") + setOf("Ж", "Ч", "Ш", "Щ").map { it.toLowerCase() }) {
+            for (j in setOf("Ы", "Я", "Ю") + setOf("Ы", "Я", "Ю").map { it.toLowerCase() }) {
+                updatedLine = updatedLine.replace(i + j, i + replaceTo[j])
+            }
+        }
+        outputStream.write(updatedLine)
+        outputStream.newLine()
+    }
+    outputStream.close()
 }
 
 /**
@@ -91,7 +137,24 @@ fun sibilants(inputName: String, outputName: String) {
  *
  */
 fun centerFile(inputName: String, outputName: String) {
-    TODO()
+    val outputStream = File(outputName).bufferedWriter()
+
+    val listOfLines = mutableListOf<String>()
+
+    var maxLenght = 0
+    for (line in File(inputName).readLines()) {
+        listOfLines.add(line.trim())
+        maxLenght = max(listOfLines.last().length, maxLenght)
+    }
+
+    for (line in listOfLines) {
+        val lineLength = line.length
+
+        outputStream.write(times(" ", (maxLenght - lineLength) / 2) + line)
+        outputStream.newLine()
+    }
+
+    outputStream.close()
 }
 
 /**
@@ -122,7 +185,56 @@ fun centerFile(inputName: String, outputName: String) {
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
-    TODO()
+    val outputStream = File(outputName).bufferedWriter()
+
+    val listOfLines = mutableListOf<String>()
+
+    var maxLenght = 0
+    for (line in File(inputName).readLines()) {
+        listOfLines.add(line.trim())
+        maxLenght = max(listOfLines.last().length, maxLenght)
+    }
+
+    for (line in listOfLines) {
+        val words = line.split(" +".toRegex())
+        val lineLength = words.joinToString(" ").length
+        val numberOfWords = words.size
+
+        var updatedLine = ""
+
+        val numberOfSpaces = if (numberOfWords < 2) {
+            0
+        } else {
+            (maxLenght - lineLength) / (numberOfWords - 1) + 2
+        }
+
+        var numberOfWordsWithAdditionalSpace = (words.joinToString(
+            separator = times(
+                " ",
+                numberOfSpaces
+            )
+        ).length) - maxLenght
+
+        if (numberOfWordsWithAdditionalSpace < 0) numberOfWordsWithAdditionalSpace = 0
+
+        for (i in words.indices) {
+            val word = words[i]
+            when {
+                i == 0 -> updatedLine += word
+                i >= numberOfWords - numberOfWordsWithAdditionalSpace -> {
+                    updatedLine += times(" ", numberOfSpaces - 1) + word
+                }
+                else -> {
+                    updatedLine += times(" ", numberOfSpaces) + word
+                }
+            }
+        }
+
+        outputStream.write(updatedLine)
+        outputStream.newLine()
+    }
+
+    outputStream.close()
 }
 
 /**
@@ -143,7 +255,21 @@ fun alignFileByWidth(inputName: String, outputName: String) {
  * Ключи в ассоциативном массиве должны быть в нижнем регистре.
  *
  */
-fun top20Words(inputName: String): Map<String, Int> = TODO()
+fun top20Words(inputName: String): Map<String, Int> {
+    val result = mutableMapOf<String, Int>()
+
+    for (line in File(inputName).readLines()) {
+        for (word in line.toLowerCase().split("[^a-zа-яё]+".toRegex())) {
+            if (word != "") result[word] = (result[word] ?: 0) + 1
+        }
+    }
+
+    return result
+        .toList()
+        .sortedByDescending { it.second }
+        .take(20)
+        .toMap()
+}
 
 /**
  * Средняя
@@ -181,7 +307,28 @@ fun top20Words(inputName: String): Map<String, Int> = TODO()
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: String) {
-    TODO()
+    val outputStream = File(outputName).bufferedWriter()
+    val newDictionary = mutableMapOf<Char, String>()
+
+    for ((k, v) in dictionary) {
+        if (k.toLowerCase() == k.toUpperCase()) {
+            newDictionary[k] = v
+        } else {
+            newDictionary[k.toLowerCase()] = v.toLowerCase()
+            newDictionary[k.toUpperCase()] =
+                v.mapIndexed { index, c -> if (index == 0) c.toUpperCase() else c.toLowerCase() }.joinToString("")
+        }
+    }
+
+    for (c in File(inputName).readText()) {
+        if (newDictionary[c] != null) {
+            outputStream.write(newDictionary[c]!!)
+        } else {
+            outputStream.write(c.toString())
+        }
+    }
+
+    outputStream.close()
 }
 
 /**
@@ -209,7 +356,24 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun chooseLongestChaoticWord(inputName: String, outputName: String) {
-    TODO()
+    val outputStream = File(outputName).bufferedWriter()
+
+    val listOfWords = mutableListOf<Pair<String, Int>>()
+    var maxLenght = 0
+    for (line in File(inputName).readLines()) {
+        if (line.length == line.toSet().size) {
+            listOfWords.add(line to line.toLowerCase().toSet().size)
+            maxLenght = max(listOfWords.last().second, maxLenght)
+        }
+    }
+    outputStream.write(
+        listOfWords
+            .filter { it.second == maxLenght }
+            .map { it.first }
+            .joinToString(", ")
+    )
+
+    outputStream.close()
 }
 
 /**
@@ -244,21 +408,117 @@ Suspendisse ~~et elit in enim tempus iaculis~~.
  *
  * Соответствующий выходной файл:
 <html>
-    <body>
-        <p>
-            Lorem ipsum <i>dolor sit amet</i>, consectetur <b>adipiscing</b> elit.
-            Vestibulum lobortis. <s>Est vehicula rutrum <i>suscipit</i></s>, ipsum <s>lib</s>ero <i>placerat <b>tortor</b></i>.
-        </p>
-        <p>
-            Suspendisse <s>et elit in enim tempus iaculis</s>.
-        </p>
-    </body>
+<body>
+<p>
+Lorem ipsum <i>dolor sit amet</i>, consectetur <b>adipiscing</b> elit.
+Vestibulum lobortis. <s>Est vehicula rutrum <i>suscipit</i></s>, ipsum <s>lib</s>ero <i>placerat <b>tortor</b></i>.
+</p>
+<p>
+Suspendisse <s>et elit in enim tempus iaculis</s>.
+</p>
+</body>
 </html>
  *
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
-    TODO()
+    val outputStream = File(outputName).bufferedWriter()
+
+    outputStream.write("<html>")
+    outputStream.newLine()
+    outputStream.write("<body>")
+    outputStream.newLine()
+
+    val inputText = mutableListOf<String>()
+    for (line in File(inputName).readLines()) {
+        if (line.isEmpty()) {
+            for (l in markdownToHtmlSimple(inputText)) {
+                if (l.isEmpty()) {
+                    outputStream.newLine()
+                } else {
+                    outputStream.write(l)
+                }
+            }
+            inputText.clear()
+        } else {
+            inputText.add(line)
+        }
+    }
+
+    for (line in markdownToHtmlSimple(inputText)) {
+        if (line.isEmpty()) {
+            outputStream.newLine()
+        } else {
+            outputStream.write(line)
+        }
+    }
+    inputText.clear()
+
+    outputStream.write("</body>")
+    outputStream.newLine()
+    outputStream.write("</html>")
+    outputStream.newLine()
+
+    outputStream.close()
+}
+
+fun markdownToHtmlSimple(inputText: List<String>): List<String> {
+    val result = mutableListOf<String>()
+
+    result.add("<p>")
+
+    val lineUpdated = inputText.joinToString("")
+
+    var newLine = ""
+    val stack = mutableListOf<Pair<Int, String>>()
+
+    var c = 0
+
+    while (c < lineUpdated.length) {
+        when {
+            "^~~".toRegex().containsMatchIn(lineUpdated.slice(c until lineUpdated.length)) -> {
+                if (stack.isNotEmpty() && stack.last().second == "<s>") {
+                    stack.remove(stack.last())
+                    newLine += "</s>"
+                } else {
+                    stack.add(c to "<s>")
+                    newLine += "<s>"
+                }
+                c += 2
+            }
+            "^\\*\\*".toRegex().containsMatchIn(lineUpdated.slice(c until lineUpdated.length)) -> {
+                if (stack.isNotEmpty() && stack.last().second == "<b>") {
+                    stack.remove(stack.last())
+                    newLine += "</b>"
+                } else {
+                    stack.add(c to "<b>")
+                    newLine += "<b>"
+                }
+                c += 2
+            }
+            "^\\*".toRegex().containsMatchIn(lineUpdated.slice(c until lineUpdated.length)) -> {
+                if (stack.isNotEmpty() && stack.last().second == "<i>") {
+                    stack.remove(stack.last())
+                    newLine += "</i>"
+                } else {
+                    stack.add(c to "<i>")
+                    newLine += "<i>"
+                }
+                c += 1
+            }
+            else -> {
+                newLine += lineUpdated[c]
+                c += 1
+            }
+        }
+    }
+
+    result.add(newLine)
+    result.add("</p>")
+    result.add("")
+
+
+    return result
 }
 
 /**
@@ -295,73 +555,211 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
  *
  * Пример входного файла:
 ///////////////////////////////начало файла/////////////////////////////////////////////////////////////////////////////
-* Утка по-пекински
-    * Утка
-    * Соус
-* Салат Оливье
-    1. Мясо
-        * Или колбаса
-    2. Майонез
-    3. Картофель
-    4. Что-то там ещё
-* Помидоры
-* Фрукты
-    1. Бананы
-    23. Яблоки
-        1. Красные
-        2. Зелёные
+ * Утка по-пекински
+ * Утка
+ * Соус
+ * Салат Оливье
+1. Мясо
+ * Или колбаса
+2. Майонез
+3. Картофель
+4. Что-то там ещё
+ * Помидоры
+ * Фрукты
+1. Бананы
+23. Яблоки
+1. Красные
+2. Зелёные
 ///////////////////////////////конец файла//////////////////////////////////////////////////////////////////////////////
  *
  *
  * Соответствующий выходной файл:
 ///////////////////////////////начало файла/////////////////////////////////////////////////////////////////////////////
 <html>
-  <body>
-    <ul>
-      <li>
-        Утка по-пекински
-        <ul>
-          <li>Утка</li>
-          <li>Соус</li>
-        </ul>
-      </li>
-      <li>
-        Салат Оливье
-        <ol>
-          <li>Мясо
-            <ul>
-              <li>
-                  Или колбаса
-              </li>
-            </ul>
-          </li>
-          <li>Майонез</li>
-          <li>Картофель</li>
-          <li>Что-то там ещё</li>
-        </ol>
-      </li>
-      <li>Помидоры</li>
-      <li>
-        Фрукты
-        <ol>
-          <li>Бананы</li>
-          <li>
-            Яблоки
-            <ol>
-              <li>Красные</li>
-              <li>Зелёные</li>
-            </ol>
-          </li>
-        </ol>
-      </li>
-    </ul>
-  </body>
+<body>
+<ul>
+<li>
+Утка по-пекински
+<ul>
+<li>Утка</li>
+<li>Соус</li>
+</ul>
+</li>
+<li>
+Салат Оливье
+<ol>
+<li>Мясо
+<ul>
+<li>
+Или колбаса
+</li>
+</ul>
+</li>
+<li>Майонез</li>
+<li>Картофель</li>
+<li>Что-то там ещё</li>
+</ol>
+</li>
+<li>Помидоры</li>
+<li>
+Фрукты
+<ol>
+<li>Бананы</li>
+<li>
+Яблоки
+<ol>
+<li>Красные</li>
+<li>Зелёные</li>
+</ol>
+</li>
+</ol>
+</li>
+</ul>
+</body>
 </html>
 ///////////////////////////////конец файла//////////////////////////////////////////////////////////////////////////////
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 fun markdownToHtmlLists(inputName: String, outputName: String) {
-    TODO()
+    val outputStream = File(outputName).bufferedWriter()
+
+    outputStream.write("<html>")
+    outputStream.newLine()
+    outputStream.write("<body>")
+    outputStream.newLine()
+
+    val inputText = mutableListOf<String>()
+
+    for (line in File(inputName).readLines()) {
+        inputText.add(line)
+    }
+
+    for (line in markdownToHtmlLists(inputText)) {
+        if (line.isEmpty()) {
+            outputStream.newLine()
+        } else {
+            outputStream.write(line)
+        }
+    }
+
+    outputStream.write("</body>")
+    outputStream.newLine()
+    outputStream.write("</html>")
+    outputStream.close()
+
+}
+
+fun markdownToHtmlLists(inputText: List<String>): List<String> {
+    val result = mutableListOf<String>()
+
+    val stack = mutableListOf<String>()
+
+    var currentLevel = -1
+    for (line in inputText) {
+        val type = if (line.trim().startsWith("*")) "ul" else "ol"
+        var level = 0
+        //println(line)
+        val newLine = if (type == "ul") {
+            line.replace(Regex("^ *\\* "), "")
+        } else {
+            line.replace(Regex("^ *[0-9]+\\."), "")
+        }
+
+        while (true) {
+            if (line[level] != ' ') break
+            level++
+        }
+
+        when {
+            level > currentLevel -> {
+                //println("${times(" ", stack.size * 2)}<$type>")
+                result.add("${times(" ", stack.size * 2)}<$type>")
+                result.add("")
+
+                stack.add(type)
+
+                //println("${times(" ", stack.size * 2)}<li>")
+                result.add("${times(" ", stack.size * 2)}<li>")
+                result.add("")
+
+                stack.add("li")
+
+                //println("${times(" ", (stack.size) * 2)}$newLine")
+                result.add("${times(" ", (stack.size) * 2)}$newLine")
+                result.add("")
+
+                currentLevel = level
+            }
+            level < currentLevel -> {
+                for (i in 0 until ((currentLevel - level) / 4)) {
+                    if (stack.isNotEmpty() && stack.last() == "li") {
+                        //println("${times(" ", (stack.size - 1) * 2)}</li>")
+                        result.add("${times(" ", (stack.size - 1) * 2)}</li>")
+                        result.add("")
+
+                        stack.removeAt(stack.size - 1)
+                    }
+                    //println("${times(" ", (stack.size - 1) * 2)}</${stack.last()}>")
+                    result.add("${times(" ", (stack.size - 1) * 2)}</${stack.last()}>")
+                    result.add("")
+
+                    stack.removeAt(stack.size - 1)
+                }
+
+                if (stack.isNotEmpty() && stack.last() == "li") {
+                    //println("${times(" ", (stack.size - 1) * 2)}</li>")
+                    result.add("${times(" ", (stack.size - 1) * 2)}</li>")
+                    result.add("")
+
+                    stack.removeAt(stack.size - 1)
+                }
+
+                //println("${times(" ", stack.size * 2)}<li>")
+                result.add("${times(" ", stack.size * 2)}<li>")
+                result.add("")
+
+                stack.add("li")
+
+                //println("${times(" ", (stack.size) * 2)}$newLine")
+                result.add("${times(" ", (stack.size) * 2)}$newLine")
+                result.add("")
+
+                currentLevel = level
+            }
+            else -> {
+                if (stack.isNotEmpty() && stack.last() == "li") {
+                    //println("${times(" ", (stack.size - 1) * 2)}</li>")
+                    result.add("${times(" ", (stack.size - 1) * 2)}</li>")
+                    result.add("")
+
+                    stack.removeAt(stack.size - 1)
+                }
+
+                //println("${times(" ", stack.size * 2)}<li>")
+                result.add("${times(" ", stack.size * 2)}<li>")
+                result.add("")
+
+                stack.add("li")
+
+                //println("${times(" ", (stack.size) * 2)}$newLine")
+                result.add("${times(" ", (stack.size) * 2)}$newLine")
+                result.add("")
+            }
+        }
+        //println(stack)
+    }
+
+    while (stack.isNotEmpty()) {
+        //println("${times(" ", (stack.size - 1) * 2)}</${stack.last()}>")
+
+        result.add("${times(" ", (stack.size - 1) * 2)}</${stack.last()}>")
+        result.add("")
+
+        stack.removeAt(stack.size - 1)
+        currentLevel -= 4
+    }
+
+    return result
 }
 
 /**
@@ -373,7 +771,72 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
  *
  */
 fun markdownToHtml(inputName: String, outputName: String) {
-    TODO()
+    val outputStream = File(outputName).bufferedWriter()
+
+    outputStream.write("<html>")
+    outputStream.newLine()
+    outputStream.write("<body>")
+    outputStream.newLine()
+
+    val inputText = mutableListOf<String>()
+    var currentType = "null"
+    for (line in File(inputName).readLines()) {
+        if (line.isEmpty()) {
+            if (currentType == "list") {
+                for (l in markdownToHtmlLists(inputText)) {
+                    if (l.isEmpty()) {
+                        outputStream.newLine()
+                    } else {
+                        outputStream.write(l)
+                    }
+                }
+            } else {
+                for (l in markdownToHtmlSimple(inputText)) {
+                    if (l.isEmpty()) {
+                        outputStream.newLine()
+                    } else {
+                        outputStream.write(l)
+                    }
+                }
+            }
+            inputText.clear()
+            currentType = "null"
+        } else {
+            if (currentType == "null") {
+                currentType = when {
+                    line.matches(Regex("^ *\\*.*")) || line.matches(Regex("^ *[0-1].*")) -> "list"
+                    else -> "paragraph"
+                }
+            }
+            inputText.add(line)
+        }
+    }
+
+    if (currentType == "list") {
+        for (line in markdownToHtmlLists(inputText)) {
+            if (line.isEmpty()) {
+                outputStream.newLine()
+            } else {
+                outputStream.write(line)
+            }
+        }
+    } else {
+        for (line in markdownToHtmlSimple(inputText)) {
+            if (line.isEmpty()) {
+                outputStream.newLine()
+            } else {
+                outputStream.write(line)
+            }
+        }
+    }
+    inputText.clear()
+
+    outputStream.write("</body>")
+    outputStream.newLine()
+    outputStream.write("</html>")
+    outputStream.newLine()
+
+    outputStream.close()
 }
 
 /**
@@ -382,27 +845,58 @@ fun markdownToHtml(inputName: String, outputName: String) {
  * Вывести в выходной файл процесс умножения столбиком числа lhv (> 0) на число rhv (> 0).
  *
  * Пример (для lhv == 19935, rhv == 111):
-   19935
-*    111
+19935
+ *    111
 --------
-   19935
+19935
 + 19935
 +19935
 --------
- 2212785
+2212785
  * Используемые пробелы, отступы и дефисы должны в точности соответствовать примеру.
  * Нули в множителе обрабатывать так же, как и остальные цифры:
-  235
-*  10
+235
+ *  10
 -----
-    0
+0
 +235
 -----
- 2350
+2350
  *
  */
 fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
-    TODO()
+    val outputStream = File(outputName).bufferedWriter()
+    val lhvLen = lhv.toString().length
+    val rhvLen = rhv.toString().length
+    val totalLen = (lhv * rhv).toString().length + 1
+    val maxLen = (lhv * rhv).toString().length
+
+    outputStream.write("${times(" ", totalLen - lhvLen)}$lhv")
+    outputStream.newLine()
+
+    outputStream.write("*${times(" ", totalLen - rhvLen - 1)}$rhv")
+    outputStream.newLine()
+
+    outputStream.write(times("-", totalLen))
+    outputStream.newLine()
+
+    for (i in rhvLen - 1 downTo 0) {
+        val result = rhv.toString()[i].toString().toInt() * lhv
+        if (i == rhvLen - 1) {
+            outputStream.write(" ${times(" ", totalLen - (rhvLen - i) - result.toString().length)}$result")
+        } else {
+            outputStream.write("+${times(" ", totalLen - (rhvLen - i) - result.toString().length)}$result")
+        }
+        outputStream.newLine()
+    }
+
+    outputStream.write(times("-", totalLen))
+    outputStream.newLine()
+
+    outputStream.write("${times(" ", totalLen - maxLen)}${lhv * rhv}")
+    outputStream.newLine()
+
+    outputStream.close()
 }
 
 
@@ -412,21 +906,148 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  * Вывести в выходной файл процесс деления столбиком числа lhv (> 0) на число rhv (> 0).
  *
  * Пример (для lhv == 19935, rhv == 22):
-  19935 | 22
- -198     906
- ----
-    13
-    -0
-    --
-    135
-   -132
-   ----
-      3
+19935 | 22
+-198     906
+----
+13
+-0
+--
+135
+-132
+----
+3
 
  * Используемые пробелы, отступы и дефисы должны в точности соответствовать примеру.
  *
  */
 fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
-    TODO()
+    val outputStream = File(outputName).bufferedWriter()
+
+    val steps = giveMeDivisionSteps(lhv, rhv)
+
+    val filteredSteps = if (steps.indexOf(steps.find { it["Multiplier"]!! > 0 }) >= 0) {
+        steps
+            .slice(steps.indexOf(steps.find { it["Multiplier"]!! > 0 }) until steps.size)
+    } else {
+        steps
+    }
+
+    val lines = mutableListOf<String>()
+
+    var first = true
+
+    val addSpace = addOneMoreSpace(lhv, rhv)
+
+    for (step in filteredSteps) {
+        if (first) {
+            first = false
+            val firstLine = giveMeDivisionProcessFirstLine(lhv, rhv)
+
+            lines.add(firstLine)
+
+            lines.add(
+                "-${step["Result"]}${
+                    times(
+                        " ",
+                        lhv.toString().length - "${step["Result"]}".length - if (addSpace) 0 else 1
+                    )
+                }   ${lhv / rhv}"
+            )
+
+
+            val delimiter = times("-", step["Result"].toString().length + 1)
+
+            lines.add(delimiter)
+        } else {
+            val spacesB = times(" ", step["Position"]!! - step["Buffer"].toString().length + 1)
+
+
+            lines.add(
+                "%${step["Position"]!! + 1 + if (addSpace) 1 else 0}s"
+                    .format("$spacesB-${step["Result"]}")
+            )
+
+            val delimiter = "%${step["Position"]!! + 1 + if (addSpace) 1 else 0}s"
+                .format(times("-", step["Result"].toString().length + 1))
+
+            lines.add(delimiter)
+
+        }
+
+
+        if (step == filteredSteps.last()) {
+
+            lines.add("%${step["Position"]!! + 1 + if (addSpace) 1 else 0}s".format(step["Rest"]))
+        } else {
+            if (step["Rest"]!! < 10) {
+                lines.add(
+                    "%${step["Position"]!! + 2 + if (addSpace) 1 else 0}s".format(
+                        "0" + step["Rest"]!!.toString()
+                    )
+                )
+            } else {
+                lines.add("%${step["Position"]!! + 2 + if (addSpace) 1 else 0}s".format(step["Rest"]))
+            }
+        }
+    }
+
+//    filteredSteps
+//        .forEach { println(it) }
+//    lines
+//        .forEach { println(it) }
+
+    lines.forEach {
+        outputStream.write(it)
+        outputStream.newLine()
+    }
+
+    outputStream.close()
 }
 
+fun giveMeDivisionProcessFirstLine(lhv: Int, rhv: Int): String = when {
+    addOneMoreSpace(lhv, rhv) -> " $lhv | $rhv"
+    else -> "$lhv | $rhv"
+}
+
+fun addOneMoreSpace(lhv: Int, rhv: Int): Boolean = when {
+    (lhv / rhv * rhv).toString().length < lhv.toString().length -> false
+    else -> true
+}
+
+fun giveMeDivisionSteps(lhv: Int, rhv: Int): List<Map<String, Int>> {
+    val steps = mutableListOf<Int>()
+
+    val lhvList = lhv.toString().map { it.toString().toInt() }
+    var buff = lhvList[0].toString()
+    for (i in lhvList.indices) {
+        steps.add(i)
+
+        steps.add(buff.toInt())
+
+        val r = buff.toInt() / rhv
+
+        steps.add(r * rhv)
+
+        steps.add(r)
+
+        var rest = buff.toInt() - r * rhv
+
+        if (i + 1 < lhvList.size) rest = (rest.toString() + lhvList[i + 1].toString()).toInt()
+
+        steps.add(rest)
+
+        buff = rest.toString()
+    }
+
+    return steps
+        .chunked(5)
+        .map {
+            mapOf(
+                "Position" to it[0],
+                "Buffer" to it[1],
+                "Result" to it[2],
+                "Multiplier" to it[3],
+                "Rest" to it[4]
+            )
+        }
+}

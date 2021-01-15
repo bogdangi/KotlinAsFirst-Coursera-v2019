@@ -61,6 +61,10 @@ Basic, Ruby, Swift.
     @Tag("Normal")
     fun countSubstrings() {
         assertEquals(
+            mapOf("бф" to 2),
+            countSubstrings("input/substrings_in3.txt", listOf("бф", "бф"))
+        )
+        assertEquals(
             mapOf("РАЗНЫЕ" to 2, "ные" to 2, "Неряшливость" to 1, "е" to 49, "эволюция" to 0),
             countSubstrings("input/substrings_in1.txt", listOf("РАЗНЫЕ", "ные", "Неряшливость", "е", "эволюция"))
         )
@@ -120,6 +124,14 @@ Basic, Ruby, Swift.
     @Test
     @Tag("Hard")
     fun alignFileByWidth() {
+        alignFileByWidth("input/width_in2.txt", "temp.txt")
+        assertFileContent(
+            "temp.txt",
+            """ааабаа        ОАААБВБВБ        /       ХюБббМ:       жбва       деббав       ьп
+збчаЩав: ааабаа, ааабаа -- бббваабуб --- жбва - бЕ --- ВББАББВБ: бе --- ДЕббав,"""
+        )
+        File("temp.txt").delete()
+
         alignFileByWidth("input/width_in1.txt", "temp.txt")
         assertFileContent(
             "temp.txt",
@@ -192,6 +204,22 @@ Basic, Ruby, Swift.
     @Tag("Normal")
     fun transliterate() {
         transliterate(
+            "input/trans_in3.txt",
+            mapOf('\n' to "9"),
+            "temp.txt"
+        )
+        assertFileContent("temp.txt", "9")
+        File("temp.txt").delete()
+
+        transliterate(
+            "input/trans_in2.txt",
+            mapOf('?' to "a"),
+            "temp.txt"
+        )
+        assertFileContent("temp.txt", "a")
+        File("temp.txt").delete()
+
+        transliterate(
             "input/trans_in1.txt",
             mapOf('з' to "zz", 'р' to "r", 'д' to "d", 'й' to "y", 'М' to "m", 'и' to "yy", '!' to "!!!"),
             "temp.txt"
@@ -211,6 +239,10 @@ Basic, Ruby, Swift.
     @Test
     @Tag("Normal")
     fun chooseLongestChaoticWord() {
+        chooseLongestChaoticWord("input/chaotic_in2.txt", "temp.txt")
+        assertFileContent("temp.txt", "")
+        File("temp.txt").delete()
+
         chooseLongestChaoticWord("input/chaotic_in1.txt", "temp.txt")
         assertFileContent("temp.txt", "Карминовый, Некрасивый")
         File("temp.txt").delete()
@@ -324,6 +356,23 @@ Basic, Ruby, Swift.
         }
 
         test(
+            38057,
+            41825,
+            """
+                  38057
+            *     41825
+            -----------
+                 190285
+            +    76114
+            +  304456
+            +  38057
+            +152228
+            -----------
+             1591734025
+            """
+        )
+
+        test(
             19935,
             111,
             """
@@ -368,6 +417,13 @@ Basic, Ruby, Swift.
     }
 
     @Test
+    fun giveMeDivisionProcessFirstLine() {
+        assertEquals(giveMeDivisionProcessFirstLine(16, 9), "16 | 9")
+        assertEquals(giveMeDivisionProcessFirstLine(2, 20), " 2 | 20")
+        assertEquals(giveMeDivisionProcessFirstLine(19935, 22), " 19935 | 22")
+    }
+
+    @Test
     @Tag("Hard")
     fun printDivisionProcess() {
 
@@ -395,17 +451,6 @@ Basic, Ruby, Swift.
         )
 
         test(
-            2,
-            20,
-            """
-              2 | 20
-             -0   0
-             --
-              2
-             """
-        )
-
-        test(
             99999,
             1,
             """
@@ -427,6 +472,27 @@ Basic, Ruby, Swift.
                   0
              """
         )
+        test(
+            16,
+            9,
+            """
+             16 | 9
+             -9   1
+             --
+              7
+             """
+        )
+        test(
+            2,
+            20,
+            """
+              2 | 20
+             -0   0
+             --
+              2
+             """
+        )
+
 
         File("temp.txt").delete()
     }
